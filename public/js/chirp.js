@@ -1532,6 +1532,18 @@ var browser = require('../../../build/browser')\n\
   , error = puts.bind(puts, 'error:')\n\
 \n\
 \n\
+function applyFilters (filters, data) {\n\
+  var tmp = [].concat(filters)\n\
+\n\
+  ~function next () {\n\
+    var fn = tmp.shift()\n\
+    if (fn) {\n\
+      fn(data, next);\n\
+    }\n\
+  }();\n\
+}\n\
+\n\
+\n\
 /**\n\
  * DOM ready state\n\
  */\n\
@@ -1580,8 +1592,8 @@ function chirp (node, client) {\n\
   this.client = client;\n\
   this.domStream = $(node).find('.body').get(0);\n\
   this.input = $(node).find('.input').get(0);\n\
-\n\
   this.user = function () { return owner; };\n\
+  this.filters = [];\n\
 \n\
   chirp.ready(function () {\n\
     if (!(owner = store.get('user')))\n\
@@ -1591,8 +1603,14 @@ function chirp (node, client) {\n\
       if (undefined === data.sid)\n\
         client.sid = data.sid;\n\
 \n\
+      var tmpFilters = [].concat(self.filters);\n\
+\n\
+      tmpFilters.push(function (d, next) {\n\
+        self.write(Message(d));\n\
+      });\n\
+\n\
       if (data.message && data.owner)\n\
-      self.write(Message(data));\n\
+        applyFilters(tmpFilters, data)\n\
     });\n\
 \n\
     client.on('error', function (e) {\n\
@@ -1764,6 +1782,22 @@ chirp.prototype.auth = function (fn) {\n\
 \n\
 \n\
 /**\n\
+ * Provide a filter function\n\
+ * for when a client receives\n\
+ * data\n\
+ *\n\
+ * @api public\n\
+ * @param {Function} fn\n\
+ */\n\
+\n\
+chirp.prototype.use = function (fn) {\n\
+  if ('function' !== typeof fn) throw new TypeError(\"expecting function\");\n\
+  this.filters.push(fn);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
  * `Message` constructor\n\
  *\n\
  * @api public\n\
@@ -1800,6 +1834,14 @@ Message.prototype.toNode = function () {\n\
   return dom(tpl);\n\
 };\n\
 //@ sourceURL=chirp/public/js/chirp/index.js"
+));
+require.register("chirp/public/js/chirp/middleware.js", Function("exports, require, module",
+"\n\
+\n\
+exports.links = function (data, next) {\n\
+  var re = /[a-z]+:\\/\\/[a-z|0-9|\\.]+\\/?.+/i;\n\
+};\n\
+//@ sourceURL=chirp/public/js/chirp/middleware.js"
 ));
 
 

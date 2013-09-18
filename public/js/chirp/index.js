@@ -13,6 +13,18 @@ var browser = require('../../../build/browser')
   , error = puts.bind(puts, 'error:')
 
 
+function applyFilters (filters, data) {
+  var tmp = [].concat(filters)
+
+  ~function next () {
+    var fn = tmp.shift()
+    if (fn) {
+      fn(data, next);
+    }
+  }();
+}
+
+
 /**
  * DOM ready state
  */
@@ -61,8 +73,8 @@ function chirp (node, client) {
   this.client = client;
   this.domStream = $(node).find('.body').get(0);
   this.input = $(node).find('.input').get(0);
-
   this.user = function () { return owner; };
+  this.filters = [];
 
   chirp.ready(function () {
     if (!(owner = store.get('user')))
@@ -72,8 +84,14 @@ function chirp (node, client) {
       if (undefined === data.sid)
         client.sid = data.sid;
 
+      var tmpFilters = [].concat(self.filters);
+
+      tmpFilters.push(function (d, next) {
+        self.write(Message(d));
+      });
+
       if (data.message && data.owner)
-      self.write(Message(data));
+        applyFilters(tmpFilters, data)
     });
 
     client.on('error', function (e) {
@@ -240,6 +258,22 @@ chirp.prototype.write = function (msg) {
 chirp.prototype.auth = function (fn) {
   var ret = prompt("User name?");
   defer(fn.bind(this, ret));
+  return this;
+};
+
+
+/**
+ * Provide a filter function
+ * for when a client receives
+ * data
+ *
+ * @api public
+ * @param {Function} fn
+ */
+
+chirp.prototype.use = function (fn) {
+  if ('function' !== typeof fn) throw new TypeError("expecting function");
+  this.filters.push(fn);
   return this;
 };
 
