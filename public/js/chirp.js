@@ -1840,6 +1840,7 @@ require.register("chirp/public/js/chirp/middleware.js", Function("exports, requi
 \n\
 exports.links = function (data, next) {\n\
   var re = /[a-z]+:\\/\\/[a-z|0-9|\\.]+\\/?.+/i;\n\
+\n\
 };\n\
 //@ sourceURL=chirp/public/js/chirp/middleware.js"
 ));

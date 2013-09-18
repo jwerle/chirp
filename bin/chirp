@@ -37,7 +37,7 @@ program.parse(process.argv)
 function start () {
   var server = chirp.createServer()
     , stream = chirp.stream({port: 8888})
-    , db = chirp.db(__dirname + '/../db')
+    , db = chirp.db(__dirname + '/../db/chirp.db')
     , port = this.port || 4000
 
   server.use(chirp.session());
