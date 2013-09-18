@@ -1,0 +1,65 @@
+
+body {
+  background: #C3F7F4;
+}
+
+#chirp {
+  width: 80%;
+  margin: 0 auto;
+  position: relative;
+  border-right: 1px solid #eee;
+  border-left: 1px solid #eee;
+  background: rgb(250, 250, 250);
+
+  & > header {
+    text-align: center;
+  }
+
+  #stream {
+    width: 100%;
+    position: relative;
+    height: 100%;
+
+    .input {
+      text-align: center;
+      padding: 15px 0px;
+      background: #eee;
+
+      input[type=text] {
+        padding: 10px;
+        border-radius: 2px;
+        border: 1px solid #eee;
+        width: 40%;
+      }
+    }
+
+    .chirp-message {
+      width: 75%;
+      display: block;
+      margin: 5px auto;
+      padding: 10px;
+      border-radius: 3px;
+      border: 1px solid #eee;
+      background: #fff;
+
+      .user {
+        display: inline-block;
+        font-size: 25px;
+        border-right: 1px solid #eee;
+        border-radius: 2px;
+        padding-right: 5px;
+        margin-right: 5px;
+      }
+    }
+  }
+
+  button {
+
+    &.send {
+      color: white;
+      border-radius: 4px;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+      background: rgb(66, 184, 221);
+    }
+  }
+}

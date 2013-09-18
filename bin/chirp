@@ -1,0 +1,54 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies
+ */
+
+var chirp = require('../')
+  , program = require('commander')
+  , puts = console.log.bind(console.log, 'chirp:')
+
+
+/**
+ * Program meta
+ */
+
+program.version(require('../package').version)
+
+
+/**
+ * Commands holder
+ */
+
+var commands = {};
+
+
+(commands.start = program.command('start'))
+    .option('-p, --port [port]', "port for the web server to listen on")
+    .action(start.bind(commands.start))
+
+program.parse(process.argv)
+
+
+/**
+ * Program commands
+ */
+
+function start () {
+  var server = chirp.createServer()
+    , stream = chirp.stream({port: 8888})
+    , db = chirp.db(__dirname + '/../db')
+    , port = this.port || 4000
+
+  server.use(chirp.session());
+
+  stream.on('data', function (d) {
+    var msg = JSON.parse(d);
+    puts("message:", msg.timestamp, msg.owner, "-", msg.message);
+    stream.stash(d);
+    stream.send(d)
+  });
+
+  server.listen(port);
+  puts("server listening on", port);
+}

@@ -1,0 +1,20 @@
+{
+  "name": "chirp",
+  "repo": "jwerle/chirp",
+  "description": "Client Javascript for chirp",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {
+    "juliangruber/stream": "*",
+    "jb55/domready": "*",
+    "component/domify": "*",
+    "visionmedia/minstache": "*"
+  },
+  "development": {},
+  "license": "MIT",
+  "main": "public/js/chirp/index.js",
+  "scripts": [
+    "build/browser.js",
+    "public/js/chirp/index.js"
+  ]
+}
