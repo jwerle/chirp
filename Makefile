@@ -1,7 +1,7 @@
 
 ##
 # Inhreit path
-PATH := "./node_modules/.bin:$(PATH)"
+PATH := ./bin:./node_modules/.bin:$(PATH)
 
 all: clean install build test
 
