@@ -16,6 +16,7 @@
   "scripts": [
     "build/browser.js",
     "public/js/chirp/index.js",
-    "public/js/chirp/middleware.js"
+    "public/js/chirp/middleware.js",
+    "public/js/chirp/util.js"
   ]
 }

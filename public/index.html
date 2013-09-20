@@ -13,17 +13,15 @@
   <body>
     <div id="chirp">
       <header>
-        <div class="pure-menu pure-menu-open pure-menu-horizontal">
+        <div class="nav pure-menu pure-menu-open pure-menu-horizontal">
           <ul>
-            <li><a href="#">chirps</a></li>
-            <li><a href="#">settings</a></li>
-            <li><a href="#">messages</a></li>
-            <li><a href="#">log out</a></li>
+            <li><a href="#" name="stream">chirps</a></li>
+            <li><a href="#" name="links">links</a></li>
           </ul>
         </div>
       </header>
 
-      <div id="stream">
+      <div id="stream" class="page">
         <div class="input">
           <input type="text" name="message" placeholder="chirp" />
           <button class="pure-button send">Send</button>
@@ -31,23 +29,55 @@
 
         <div class="body"></div>
       </div>
+
+      <div id="links" class="page">
+        <h3>Links</h3>
+        <div class="body"></div>
+      </div>
     </div>
     <script type="text/javascript" charset="utf-8">
       var chirp = require('chirp')
+        , $nav = $('.nav')
         , app = null
         , client = null
-
+        , links = null
+        , active = 'stream'
 
 
       chirp.ready(function () {
         client = chirp.createClient('ws://localhost:8888');
+        links = chirp.createClient('ws://localhost:7777');
         app = chirp($('#stream').get(0), client);
+        app.use(chirp.links({className: 'link'}))
 
         client.connect(function () {
-          console.log('connected', arguments);
+          console.log('main stream connected');
         });
 
+        links.connect(function () {
+          console.log('link stream connected');
+        });
 
+        links.on('data', function (data) {
+          var link = data.link;
+          if (!link) return;
+          $('#links .body').append($(
+            '<div class="link"></div>'
+          ).html(link));
+        });
+
+        $nav.find('ul li a').on('click', function () {
+          console.log(this.name)
+          $('.page').not('#'+ this.name)
+            .removeClass('fadeInDown')
+            .addClass('animated fadeOutUp')
+            .slideUp(400);
+
+          $('#'+ this.name)
+            .removeClass('fadeOutUp')
+            .addClass('animated fadeInDown')
+            .slideDown(400);
+        });
       });
     </script>
   </body>

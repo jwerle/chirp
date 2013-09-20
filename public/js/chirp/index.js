@@ -8,6 +8,7 @@ var browser = require('../../../build/browser')
   , domready = require('domready')
   , dom = require('domify')
   , minstache = require('minstache')
+  , util = require('./util')
   , defer = setTimeout
   , puts = console.log.bind(console, 'chirp:')
   , error = puts.bind(puts, 'error:')
@@ -52,6 +53,14 @@ var store = chirp.store = {
   clear: localStorage.clear.bind(localStorage),
   has: function (key) { return !!this.get(key); }
 };
+
+
+/**
+ * Middleware
+ */
+
+var middleware = require('./middleware');
+chirp.links = middleware.links;
 
 
 /**
@@ -117,11 +126,16 @@ function chirp (node, client) {
       return self.auth(authUser);
     }
     var value = $(self.input).find('input').val()
+    var links = [];
     if (!value) return false;
     $(self.input).find('input').val('');
+    if (util.hasUrl(value)) {
+      links = value.match(util.URL_REGEX)
+    }
     self.client.write(JSON.stringify({
       owner: self.user(),
       message: value,
+      links: links,
       timestamp: Date.now()
     }));
   });
@@ -291,7 +305,7 @@ function Message (data) {
   else if ('object' !== typeof data) throw new TypeError("expecting object");
 
   this.owner = data.owner;
-  this.message = data.message;
+  this.message = escape(util.decodeEntities(data.message));
   this.timestamp = data.timestamp;
 }
 
@@ -312,5 +326,5 @@ Message.prototype.toNode = function () {
     this
   );
 
-  return dom(tpl);
+  return dom(unescape(tpl));
 };

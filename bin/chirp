@@ -37,16 +37,45 @@ program.parse(process.argv)
 function start () {
   var server = chirp.createServer()
     , stream = chirp.stream({port: 8888})
+    , linkStream = chirp.stream({port: 7777})
     , db = chirp.db(__dirname + '/../db/chirp.db')
+    , links = db.array('links')
     , port = this.port || 4000
 
   server.use(chirp.session());
 
   stream.on('data', function (d) {
     var msg = JSON.parse(d);
-    puts("message:", msg.timestamp, msg.owner, "-", msg.message);
-    stream.stash(d);
-    stream.send(d)
+    puts("message:", msg);
+    if (msg.links.length > 0) {
+      var tmp = msg.links.slice();
+
+      ~function next () {
+        var link = tmp.shift()
+        if (link) {
+          links.indexOf(link, function (err, index, array) {
+            if (err) return stream.emit('error', err);
+            else if (-1 === index) {
+              links.push(link, function (err) {
+                if (err) return stream.emit('error', err);
+                var ret = JSON.stringify({link: link});
+                linkStream.stash(ret);
+                linkStream.send(ret);
+                next();
+              });
+            } else {
+              next();
+            }
+          });
+        } else {
+          stream.stash(d);
+          stream.send(d);
+        }
+      }();
+    } else {
+      stream.stash(d);
+      stream.send(d);
+    }
   });
 
   server.listen(port);

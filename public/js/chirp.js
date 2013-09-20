@@ -1527,6 +1527,7 @@ var browser = require('../../../build/browser')\n\
   , domready = require('domready')\n\
   , dom = require('domify')\n\
   , minstache = require('minstache')\n\
+  , util = require('./util')\n\
   , defer = setTimeout\n\
   , puts = console.log.bind(console, 'chirp:')\n\
   , error = puts.bind(puts, 'error:')\n\
@@ -1571,6 +1572,14 @@ var store = chirp.store = {\n\
   clear: localStorage.clear.bind(localStorage),\n\
   has: function (key) { return !!this.get(key); }\n\
 };\n\
+\n\
+\n\
+/**\n\
+ * Middleware\n\
+ */\n\
+\n\
+var middleware = require('./middleware');\n\
+chirp.links = middleware.links;\n\
 \n\
 \n\
 /**\n\
@@ -1636,11 +1645,16 @@ function chirp (node, client) {\n\
       return self.auth(authUser);\n\
     }\n\
     var value = $(self.input).find('input').val()\n\
+    var links = [];\n\
     if (!value) return false;\n\
     $(self.input).find('input').val('');\n\
+    if (util.hasUrl(value)) {\n\
+      links = value.match(util.URL_REGEX)\n\
+    }\n\
     self.client.write(JSON.stringify({\n\
       owner: self.user(),\n\
       message: value,\n\
+      links: links,\n\
       timestamp: Date.now()\n\
     }));\n\
   });\n\
@@ -1810,7 +1824,7 @@ function Message (data) {\n\
   else if ('object' !== typeof data) throw new TypeError(\"expecting object\");\n\
 \n\
   this.owner = data.owner;\n\
-  this.message = data.message;\n\
+  this.message = escape(util.decodeEntities(data.message));\n\
   this.timestamp = data.timestamp;\n\
 }\n\
 \n\
@@ -1831,18 +1845,85 @@ Message.prototype.toNode = function () {\n\
     this\n\
   );\n\
 \n\
-  return dom(tpl);\n\
+  return dom(unescape(tpl));\n\
 };\n\
 //@ sourceURL=chirp/public/js/chirp/index.js"
 ));
 require.register("chirp/public/js/chirp/middleware.js", Function("exports, require, module",
 "\n\
+/**\n\
+ * Module dependencies\n\
+ */\n\
 \n\
-exports.links = function (data, next) {\n\
-  var re = /[a-z]+:\\/\\/[a-z|0-9|\\.]+\\/?.+/i;\n\
+var dom = require('domify')\n\
+  , util = require('./util')\n\
 \n\
+\n\
+/**\n\
+ * Returns a middleware\n\
+ * function that converts all\n\
+ * links to anchor tags\n\
+ *\n\
+ * @api public\n\
+ * @param {Object} opts\n\
+ */\n\
+\n\
+exports.links = function (opts) {\n\
+  opts = ('object' === typeof opts) ? opts : {};\n\
+\n\
+  return function (data, next) {\n\
+    var re = util.URL_REGEX;\n\
+    var target = opts.target || '_blank';\n\
+    var className = opts.className || '';\n\
+    var match = data.message.match(re);\n\
+\n\
+    var tpl = '<a href=\"$1\" alt=\"$1\"'+\n\
+                 'target=\"'+ target +'\"'+\n\
+                 'class=\"'+ className +'\"'+\n\
+                 'title=\"$1\">$1</a>';\n\
+\n\
+    if (null === match)\n\
+      return next();\n\
+\n\
+    data.message = data.message.replace(re, tpl);\n\
+    data.hasLink = true;\n\
+    next();\n\
+  }\n\
 };\n\
 //@ sourceURL=chirp/public/js/chirp/middleware.js"
+));
+require.register("chirp/public/js/chirp/util.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies\n\
+ */\n\
+\n\
+\n\
+// http://blog.mattheworiordan.com/post/13174566389/url-regular-expression-for-links-with-or-without-the\n\
+exports.URL_REGEX = /((([A-Za-z]{3,9}:(?:\\/\\/)?)(?:[-;:&=\\+\\$,\\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\\+\\$,\\w]+@)[A-Za-z0-9.-]+)((?:\\/[\\+~%\\/.\\w-_]*)?\\??(?:[-\\+=&;%@.\\w_]*)#?(?:[.\\!\\/\\\\w]*))?)/gm;\n\
+\n\
+\n\
+// borrowed from http://stackoverflow.com/a/9609450/1408668\n\
+exports.decodeEntities = (function() {\n\
+  var el = document.createElement('div');\n\
+\n\
+  function decodeHTMLEntities (str) {\n\
+    if ('string' === typeof str) {\n\
+      el.innerHTML = str;\n\
+      str = el.innerHTML;\n\
+    }\n\
+\n\
+    return str;\n\
+  }\n\
+\n\
+  return decodeHTMLEntities;\n\
+})();\n\
+\n\
+\n\
+exports.hasUrl = function (url) {\n\
+  return exports.URL_REGEX.test(url);\n\
+};\n\
+//@ sourceURL=chirp/public/js/chirp/util.js"
 ));
 
 

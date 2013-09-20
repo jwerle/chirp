@@ -1,6 +1,13 @@
 body {
   background: #C3F7F4;
 }
+a {
+  color: #3b8bba;
+  text-decoration: none;
+}
+a:visited {
+  color: #265778;
+}
 #chirp {
   width: 80%;
   margin: 0 auto;
@@ -11,6 +18,9 @@ body {
 }
 #chirp > header {
   text-align: center;
+}
+#chirp .page:not(#stream) {
+  opacity: 0;
 }
 #chirp #stream {
   width: 100%;
@@ -44,6 +54,21 @@ body {
   border-radius: 2px;
   padding-right: 5px;
   margin-right: 5px;
+}
+#chirp #stream .chirp-message .link {
+  text-overflow: ellipsis;
+  max-width: 200px;
+  white-space: nowrap;
+  display: inline-block;
+  overflow: hidden;
+}
+#chirp h3 {
+  margin: 0;
+  color: #333;
+  padding: 1em 2em;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+  background: #fff;
 }
 #chirp button.send {
   color: white;
