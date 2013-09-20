@@ -17,3 +17,6 @@ node_modules
 components
 build
 db/*
+
+public/js/chirp.js
+public/css/chirp.css
