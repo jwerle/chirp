@@ -27,7 +27,10 @@ browser:
 	browserify -s __browser__ ./browser/index.js > ./build/browser.js
 
 reset:
-	rm -rf db/*
+	rm -rf db
+	rm -rf build
+	@mkdir db
+	@mkdir build
 
 test:
 	@:

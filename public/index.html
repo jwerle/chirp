@@ -41,12 +41,13 @@
         , app = null
         , client = null
         , links = null
-        , active = 'stream'
+        , activePage = 'stream'
+        , hostname = location.hostname
 
 
       chirp.ready(function () {
-        client = chirp.createClient('ws://localhost:8888');
-        links = chirp.createClient('ws://localhost:7777');
+        client = chirp.createClient('ws://'+ hostname +':8888');
+        links = chirp.createClient('ws://'+ hostname +':7777');
         app = chirp($('#stream').get(0), client);
         app.use(chirp.links({className: 'link'}))
 
