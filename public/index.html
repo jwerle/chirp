@@ -27,6 +27,7 @@
           <button class="pure-button send">Send</button>
         </div>
 
+        <div class="users"></div>
         <div class="body"></div>
       </div>
 
@@ -39,24 +40,40 @@
       var chirp = require('chirp')
         , $nav = $('.nav')
         , app = null
-        , client = null
+        , stream = null
         , links = null
+        , users = null
         , activePage = 'stream'
         , hostname = location.hostname
+        , host = location.host
+        , wshost = 'ws://'+ host
 
 
       chirp.ready(function () {
-        client = chirp.createClient('ws://'+ hostname +':8888');
-        links = chirp.createClient('ws://'+ hostname +':7777');
-        app = chirp($('#stream').get(0), client);
+        stream = chirp.createClient(wshost + '/stream');
+        links = chirp.createClient(wshost +'/links');
+        users = chirp.createClient(wshost +'/users');
+
+        app = chirp($('#stream').get(0), {
+          streams: {
+            chirps: stream,
+            links: links,
+            users: users
+          }
+        });
+
         app.use(chirp.links({className: 'link'}))
 
-        client.connect(function () {
+        stream.connect(function () {
           console.log('main stream connected');
         });
 
         links.connect(function () {
           console.log('link stream connected');
+        });
+
+        users.connect(function () {
+          console.log('user stream connected');
         });
 
         links.on('data', function (data) {
@@ -67,8 +84,13 @@
           ).html(link));
         });
 
+        users.on('data', function (data) {
+          var user = data.user;
+          if (!user) return;
+          console.log(user)
+        });
+
         $nav.find('ul li a').on('click', function () {
-          console.log(this.name)
           $('.page').not('#'+ this.name)
             .removeClass('fadeInDown')
             .addClass('animated fadeOutUp')

@@ -68,18 +68,20 @@ chirp.links = middleware.links;
  *
  * @api public
  * @param {Node} node
- * @param {Object} client
+ * @param {Object} opts
  */
 
-function chirp (node, client) {
+function chirp (node, opts) {
   if (!(this instanceof chirp)) return new chirp(node, client);
-  else if (!(client instanceof Stream)) throw new TypeError("expecting a stream");
   else if (!(node instanceof Node)) throw new TypeError("expecting an instance of `Node`");
+  else if ('object' !== typeof opts) throw new TypeError("expecting an object");
+  else if ('object' !== typeof opts.streams) throw new TypeError("expecting `.streams` to be an object");
 
   var self = this
     , owner = null
+    , streams = null
 
-  this.client = client;
+  this.streams = streams = opts.streams;
   this.domStream = $(node).find('.body').get(0);
   this.input = $(node).find('.input').get(0);
   this.user = function () { return owner; };
@@ -89,7 +91,7 @@ function chirp (node, client) {
     if (!(owner = store.get('user')))
       self.auth(authUser);
 
-    client.on('data', function (data) {
+    streams.chirps.on('data', function (data) {
       if (undefined === data.sid)
         client.sid = data.sid;
 
@@ -156,20 +158,19 @@ chirp.createClient = function (host) {
     , buffer = []
 
   if ('string' !== typeof host) {
-    host = window.document.location.host.replace(/:.*/, '');
+    host = window.document.location.host;
     host = 'ws://'+ host;
   }
 
   client.readable = true;
   client.writable = true;
 
-
   client.connect = function (fn) {
    client.sock = sock = new WebSocket(host);
 
    sock.onopen = function () {
      isReady = true;
-     if ('function' === fn) fn.call(client, sock);
+     if ('function' === typeof fn) fn.call(client, sock);
      for (var i = 0, len = buffer.length; i < len; ++i) {
        sock.send(buffer[i]);
      }
