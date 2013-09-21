@@ -87,7 +87,8 @@
         users.on('data', function (data) {
           var user = data.user;
           if (!user) return;
-          console.log(user)
+          $('#stream .users')
+            .append($('<div class="user" />').html(user))
         });
 
         $nav.find('ul li a').on('click', function () {

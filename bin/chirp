@@ -54,17 +54,7 @@ function start () {
     var msg = JSON.parse(d);
     puts("message:", msg);
 
-    users.indexOf(msg.owner, function (err, index) {
-      if (err) return stream.emit('error', err);
-      if (null === index) {
-        users.push(msg.owner, function (err) {
-          if (err) return stream.emit('error');
-          var ret = JSON.stringify({user: msg.owner})
-          userStream.stash(ret);
-          userStream.send(ret);
-        });
-      }
-    });
+    syncUser(msg.owner)
 
     if (msg.links.length > 0) {
       var tmp = msg.links.slice();
@@ -97,6 +87,26 @@ function start () {
     }
   });
 
+  userStream.on('data', function (d) {
+    var data = JSON.parse(d)
+    if (data.owner) syncUser(data.owner);
+  });
+
   httpServer.listen(port);
   puts("server listening on", port);
+
+
+  function syncUser (user) {
+    users.indexOf(user, function (err, index) {
+      if (err) return stream.emit('error', err);
+      if (null === index) {
+        users.push(user, function (err) {
+          if (err) return stream.emit('error');
+          var ret = JSON.stringify({user: user})
+          userStream.stash(ret);
+          userStream.send(ret);
+        });
+      }
+    });
+  }
 }

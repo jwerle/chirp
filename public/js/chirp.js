@@ -9512,18 +9512,20 @@ chirp.links = middleware.links;\n\
  *\n\
  * @api public\n\
  * @param {Node} node\n\
- * @param {Object} client\n\
+ * @param {Object} opts\n\
  */\n\
 \n\
-function chirp (node, client) {\n\
-  if (!(this instanceof chirp)) return new chirp(node, client);\n\
-  else if (!(client instanceof Stream)) throw new TypeError(\"expecting a stream\");\n\
+function chirp (node, opts) {\n\
+  if (!(this instanceof chirp)) return new chirp(node, opts);\n\
   else if (!(node instanceof Node)) throw new TypeError(\"expecting an instance of `Node`\");\n\
+  else if ('object' !== typeof opts) throw new TypeError(\"expecting an object\");\n\
+  else if ('object' !== typeof opts.streams) throw new TypeError(\"expecting `.streams` to be an object\");\n\
 \n\
   var self = this\n\
     , owner = null\n\
+    , streams = null\n\
 \n\
-  this.client = client;\n\
+  this.streams = streams = opts.streams;\n\
   this.domStream = $(node).find('.body').get(0);\n\
   this.input = $(node).find('.input').get(0);\n\
   this.user = function () { return owner; };\n\
@@ -9532,10 +9534,11 @@ function chirp (node, client) {\n\
   chirp.ready(function () {\n\
     if (!(owner = store.get('user')))\n\
       self.auth(authUser);\n\
+    else syncUser();\n\
 \n\
-    client.on('data', function (data) {\n\
+    streams.chirps.on('data', function (data) {\n\
       if (undefined === data.sid)\n\
-        client.sid = data.sid;\n\
+        streams.chirps.sid = data.sid;\n\
 \n\
       var tmpFilters = [].concat(self.filters);\n\
 \n\
@@ -9547,7 +9550,8 @@ function chirp (node, client) {\n\
         applyFilters(tmpFilters, data)\n\
     });\n\
 \n\
-    client.on('error', function (e) {\n\
+    streams.chirps.on('error', function (e) {\n\
+      throw e\n\
       error(e.message);\n\
     });\n\
   });\n\
@@ -9555,6 +9559,11 @@ function chirp (node, client) {\n\
   function authUser (name) {\n\
     if (name) owner = name;\n\
     store.put('user', owner);\n\
+    syncUser();\n\
+  }\n\
+\n\
+  function syncUser () {\n\
+    streams.users.write(JSON.stringify({owner: owner, timestamp: Date.now()}));\n\
   }\n\
 \n\
   // force a user to click the send button for now\n\
@@ -9576,7 +9585,7 @@ function chirp (node, client) {\n\
     if (util.hasUrl(value)) {\n\
       links = value.match(util.URL_REGEX)\n\
     }\n\
-    self.client.write(JSON.stringify({\n\
+    self.streams.chirps.write(JSON.stringify({\n\
       owner: self.user(),\n\
       message: value,\n\
       links: links,\n\

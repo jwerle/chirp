@@ -72,7 +72,7 @@ chirp.links = middleware.links;
  */
 
 function chirp (node, opts) {
-  if (!(this instanceof chirp)) return new chirp(node, client);
+  if (!(this instanceof chirp)) return new chirp(node, opts);
   else if (!(node instanceof Node)) throw new TypeError("expecting an instance of `Node`");
   else if ('object' !== typeof opts) throw new TypeError("expecting an object");
   else if ('object' !== typeof opts.streams) throw new TypeError("expecting `.streams` to be an object");
@@ -90,10 +90,11 @@ function chirp (node, opts) {
   chirp.ready(function () {
     if (!(owner = store.get('user')))
       self.auth(authUser);
+    else syncUser();
 
     streams.chirps.on('data', function (data) {
       if (undefined === data.sid)
-        client.sid = data.sid;
+        streams.chirps.sid = data.sid;
 
       var tmpFilters = [].concat(self.filters);
 
@@ -105,7 +106,8 @@ function chirp (node, opts) {
         applyFilters(tmpFilters, data)
     });
 
-    client.on('error', function (e) {
+    streams.chirps.on('error', function (e) {
+      throw e
       error(e.message);
     });
   });
@@ -113,6 +115,11 @@ function chirp (node, opts) {
   function authUser (name) {
     if (name) owner = name;
     store.put('user', owner);
+    syncUser();
+  }
+
+  function syncUser () {
+    streams.users.write(JSON.stringify({owner: owner, timestamp: Date.now()}));
   }
 
   // force a user to click the send button for now
@@ -134,7 +141,7 @@ function chirp (node, opts) {
     if (util.hasUrl(value)) {
       links = value.match(util.URL_REGEX)
     }
-    self.client.write(JSON.stringify({
+    self.streams.chirps.write(JSON.stringify({
       owner: self.user(),
       message: value,
       links: links,
