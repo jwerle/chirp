@@ -52,6 +52,10 @@
     "karma-coffee-preprocessor": "~0.1.0",
     "karma-phantomjs-launcher": "~0.1.0",
     "karma": "~0.10.2",
-    "karma-commonjs": "0.0.2"
+    "karma-commonjs": "0.0.2",
+    "mocha": "~1.13.0",
+    "karma-mocha": "~0.1.0",
+    "sinon": "~1.7.3",
+    "chai": "~1.8.0"
   }
 }
