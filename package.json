@@ -34,7 +34,7 @@
     "level-stream": "~1.1.1",
     "level-search": "~1.6.1",
     "level-sublevel": "~5.1.1",
-    "level-array": "0.0.1",
+    "level-array": "git://github.com/jwerle/level-array.git#indexof",
     "component": "~0.17.6",
     "serve": "~1.3.0",
     "level-livefeed": "~0.1.3",
