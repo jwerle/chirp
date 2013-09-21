@@ -1,7 +1,5 @@
-
-##
-# Inhreit path
-PATH := ./bin:./node_modules/.bin:$(PATH)
+NBIN=./node_modules/.bin
+BIN=./bin
 
 all: clean install build test
 
@@ -9,22 +7,23 @@ clean: reset
 	@rm -rf node_modules components
 
 install:
-	@npm install
-	@component install
+	npm install
+	$(NBIN)/component install
 
 build: reset less browser
-	@component build --dev -n chirp
-	@cp ./build/chirp.js ./public/js/chirp.js
+	$(NBIN)/component build --dev -n chirp
+	cp ./build/chirp.js ./public/js/chirp.js
 
 less:
-	@lessc ./less/main.less --include-paths=./less ./build/chirp.css
-	@cp ./build/chirp.css ./public/css/chirp.css
+	$(NBIN)/lessc ./less/main.less --include-paths=./less ./build/chirp.css
+	cp ./build/chirp.css ./public/css/chirp.css
 
 serve:
-	@chirp start
+	@echo
+	@$(BIN)/chirp start
 
 browser:
-	@browserify -s __browser__ ./browser/index.js > ./build/browser.js
+	$(NBIN)/browserify -s __browser__ ./browser/index.js > ./build/browser.js
 
 reset:
 	@rm -rf db
