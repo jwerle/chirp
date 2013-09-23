@@ -31,7 +31,12 @@ reset:
 	@mkdir db
 	@mkdir build
 
-test:
-	@:
+test: backendtest frontendtest
+
+backendtest:
+	$(nbin)/mocha --require ./test/support/back-end/test-bootstrap --ui bdd --reporter spec test/back-end/*.spec.js
+
+frontendtest: build
+	$(nbin)/karma start karma.front-end-tests.conf.js
 
 .PHONY: all clean build less test install browser
