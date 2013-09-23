@@ -18,7 +18,7 @@ less:
 	$(NBIN)/lessc ./less/main.less --include-paths=./less ./build/chirp.css
 	cp ./build/chirp.css ./public/css/chirp.css
 
-serve: less browser
+serve:
 	@echo
 	@$(BIN)/chirp start
 
