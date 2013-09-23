@@ -9,12 +9,16 @@ module.exports = function(config) {
 
 
     // frameworks to use
-    frameworks: ['mocha', 'commonjs'],
+    frameworks: ['mocha'],
 
 
     // list of files / patterns to load in the browser
     files: [
-      'test/front-end/**/*.spec.js'
+      'test/support/front-end/chai.js',
+      'test/support/front-end/sinon-1.7.3.js',
+      'test/support/front-end/test-bootstrap.js',
+      'public/js/chirp.js',
+      'test/front-end/*.spec.js'
     ],
 
     // test results reporter to use
@@ -47,7 +51,7 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: ['Chrome'],
+    browsers: ['Chrome', 'Firefox', 'Safari', 'PhantomJS'],
 
 
     // If browser does not capture in given timeout [ms], kill it
@@ -56,10 +60,6 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: false,
-
-    preprocessors: {
-      '**/*.js': ['commonjs']
-    }
+    singleRun: true
   });
 };
