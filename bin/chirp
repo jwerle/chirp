@@ -6,7 +6,10 @@
 
 var chirp = require('../')
   , program = require('commander')
-  , puts = console.log.bind(console.log, 'chirp:')
+  , http = require('http')
+  , util = chirp.util
+  , puts = util.puts
+  , error = util.error
 
 
 /**
@@ -36,10 +39,13 @@ program.parse(process.argv)
 
 function start () {
   var server = chirp.createServer()
-    , stream = chirp.stream({port: 8888})
-    , linkStream = chirp.stream({port: 7777})
+    , httpServer = http.createServer(server)
+    , stream = chirp.stream({server: httpServer, path: '/stream'})
+    , linkStream = chirp.stream({server: httpServer, path: '/links'})
+    , userStream = chirp.stream({server: httpServer, path: '/users'})
     , db = chirp.db(__dirname + '/../db/chirp.db')
     , links = db.array('links')
+    , users = db.array('users')
     , port = this.port || 4000
 
   server.use(chirp.session());
@@ -47,15 +53,18 @@ function start () {
   stream.on('data', function (d) {
     var msg = JSON.parse(d);
     puts("message:", msg);
+
+    syncUser(msg.owner)
+
     if (msg.links.length > 0) {
       var tmp = msg.links.slice();
 
       ~function next () {
         var link = tmp.shift()
         if (link) {
-          links.indexOf(link, function (err, index, array) {
+          links.indexOf(link, function (err, index) {
             if (err) return stream.emit('error', err);
-            else if (-1 === index) {
+            else if (null === index) {
               links.push(link, function (err) {
                 if (err) return stream.emit('error', err);
                 var ret = JSON.stringify({link: link});
@@ -78,6 +87,26 @@ function start () {
     }
   });
 
-  server.listen(port);
+  userStream.on('data', function (d) {
+    var data = JSON.parse(d)
+    if (data.owner) syncUser(data.owner);
+  });
+
+  httpServer.listen(port);
   puts("server listening on", port);
+
+
+  function syncUser (user) {
+    users.indexOf(user, function (err, index) {
+      if (err) return stream.emit('error', err);
+      if (null === index) {
+        users.push(user, function (err) {
+          if (err) return stream.emit('error');
+          var ret = JSON.stringify({user: user})
+          userStream.stash(ret);
+          userStream.send(ret);
+        });
+      }
+    });
+  }
 }

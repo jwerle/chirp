@@ -13,15 +13,15 @@ a:visited {
 }
 
 #chirp {
-  width: 80%;
+  width: 50%;
   margin: 0 auto;
   position: relative;
+  overflow: hidden;
   border-right: 1px solid #eee;
   border-left: 1px solid #eee;
   background: rgb(250, 250, 250);
 
   & > header {
-    text-align: center;
   }
   
   .page:not(#stream) {
@@ -33,10 +33,15 @@ a:visited {
     position: relative;
     height: 100%;
 
+    & > div {
+      float: left;
+    }
+
     .input {
-      text-align: center;
       padding: 15px 0px;
+      padding-left: 10px;
       background: #eee;
+      width: 100%;
 
       input[type=text] {
         padding: 10px;
@@ -44,6 +49,16 @@ a:visited {
         border: 1px solid #eee;
         width: 40%;
       }
+    }
+
+    .users {
+      display: block;
+      width: 25%;
+    }
+
+    .body {
+      float: right;
+      width: 70%;
     }
 
     .chirp-message {
@@ -72,6 +87,10 @@ a:visited {
         overflow: hidden;
       }
     }
+  }
+
+  #links {
+    display: none;
   }
 
   h3 {
